@@ -1,0 +1,50 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>产品表单</title>
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+</head>
+<body>
+<div class="container">	
+	<div class="page-header">
+    <h2>新增产品</h2>
+	</div>
+	
+	<form>
+	        <fieldset>
+	          <div class="clearfix">
+	            <label for="xlInput">名称</label>
+	            <div class="input">
+	              <input type="text" size="30" name="xlInput" id="xlInput" class="xlarge">
+	            </div>
+	          </div>
+			<div class="clearfix error">
+	            <label for="xlInput">图片链接</label>
+	            <div class="input">
+	              <input type="text" size="30" name="xlInput" id="xlInput" class="xlarge error">
+					<span class="help-inline">这里显示错误提示</span>
+	            </div>
+	          </div>
+			<div class="clearfix success">
+	            <label for="xlInput">价格</label>
+	            <div class="input">
+	              <input type="text" size="30" name="xlInput" id="xlInput" class="xlarge">
+	            </div>
+	          </div>
+	
+	          
+	          <div class="clearfix">
+	            <label for="disabledInput">描述</label>
+	            <div class="input">
+	              <textarea rows="5" id="textarea" name="textarea" class="xlarge"></textarea>
+	            </div>
+	          </div>
+			 <div class="actions">
+			            <input type="submit" value="确认" class="btn primary"/> <button class="btn" type="reset">取消</button>
+			          </div>
+	        </fieldset>
+	        </form>
+</div>
+
+</body>
+</html>
