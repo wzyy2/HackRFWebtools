@@ -8,7 +8,7 @@ def hackrf_init():
 
 def hackrf_exit():
     pass
-    return libhackrf.hackrf_init()
+    return libhackrf.hackrf_exit()
 
 def hackrf_open(device):
     pass

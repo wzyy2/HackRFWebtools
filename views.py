@@ -8,18 +8,29 @@ import threading
 import traceback
 from func import *
 from common import js_handler
-import os.path
+import os
 import datetime 
-  
+from pyhackrf.core import HackRf 
+
+hackrf = HackRf()
 htmldir = os.path.join(os.path.dirname(__file__), 'html').replace('\\','/')
+def requires_hackrf(view):
+    def new_view(request, *args, **kwargs):
+        # if hackrf.device == None:
+        #     hackrf.setup()
+        #     if hackrf.device == None:               
+        #         return  HttpResponse('No Hack Rf Detected!')
+        return view(request, *args, **kwargs)                       
+    return new_view                                                  
+
+
 def index(request):
-    t = get_template('wui4hf/ui.html')
+    t = get_template('index.html')
     c = RequestContext(request,locals())
     return HttpResponse(t.render(c))
 
 
-    ## js api handler
-
+## js api handler
 rk = threading.Lock()
 wk = threading.Lock()
 rc = 0

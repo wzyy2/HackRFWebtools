@@ -1,4 +1,4 @@
-
+import threading  
 import usb
 import struct
 import array
@@ -53,6 +53,8 @@ HackRfVendorRequest = enum(
 	HACKRF_VENDOR_REQUEST_SET_TXVGA_GAIN = 21)
 
 HackRfConstants = enum(
+	LIBUSB_ENDPOINT_IN = 0x80,
+	LIBUSB_ENDPOINT_OUT = 0x00,
 	HACKRF_DEVICE_OUT = 0x40,
 	HACKRF_DEVICE_IN = 0xC0,
 	HACKRF_USB_VID = 0x1d50,
@@ -80,10 +82,21 @@ class HackRf():
 		self.max2837 = None
 		self.si5351c = None
 		self.rffc5071 = None
+		self.callback = None
+		self.transfer_thread_started = False
+		self.do_exit = False
+		self.thread = None
 
 	def setup(self):
 		''' This is to setup a hackrf device '''
 		self.device = usb.core.find(idVendor=HackRfConstants.HACKRF_USB_VID, idProduct=HackRfConstants.HACKRF_USB_PID)
+		self.device.set_configuration(1)
+		# get an endpoint instance
+		# cfg = self.device.get_active_configuration()
+		# access the first interface
+		# intf = cfg[(0,0)]
+		# third endpoint
+		# ep = intf[2]
 		if self.device == None:
 			logger.error('No Hack Rf Detected!')
 		else:
@@ -95,6 +108,7 @@ class HackRf():
 			if isinstance( board_id, ( int, long )):
 				self.name = self.NAME_LIST[board_id]
 				logger.debug('Successfully setup HackRf device')
+
 
 	def get_board_id(self):
 		''' Gets the board's id number '''
@@ -294,18 +308,21 @@ class HackRf():
 		else:
 			logger.error('Failed to disable Amp')
 
-	def set_rx_mode(self):
+	def set_rx_mode(self, callback):
 		''' This sets the HackRf in receive mode '''
-		result = self.device.ctrl_transfer(HackRfConstants.HACKRF_DEVICE_OUT,
-			HackRfVendorRequest.HACKRF_VENDOR_REQUEST_SET_TRANSCEIVER_MODE,
-			HackRfTranscieverMode.HACKRF_TRANSCEIVER_MODE_RECEIVE, 0)
+		# result = self.device.ctrl_transfer(HackRfConstants.HACKRF_DEVICE_OUT,
+		# 	HackRfVendorRequest.HACKRF_VENDOR_REQUEST_SET_TRANSCEIVER_MODE,
+		# 	HackRfTranscieverMode.HACKRF_TRANSCEIVER_MODE_RECEIVE, 0)
+		result = 0;
 		if result == 0:
+			self.callback = callback
+			self.create_transfer_thread()
 			logger.debug('Successfully set HackRf in Recieve Mode')
 			return HackRfConstants.HACKRF_SUCCESS
 		else:
 			logger.error('Failed to set HackRf in Recieve Mode')
 
-	def set_tx_mode(self):
+	def set_tx_mode(self, callback):
 		''' This sets the HackRf in tranfer mode '''
 		result = self.device.ctrl_transfer(HackRfConstants.HACKRF_DEVICE_OUT,
 			HackRfVendorRequest.HACKRF_VENDOR_REQUEST_SET_TRANSCEIVER_MODE,
@@ -315,3 +332,41 @@ class HackRf():
 			return HackRfConstants.HACKRF_SUCCESS
 		else:
 			logger.error('Failed to set HackRf in Transfer Mode')
+
+	def stop_rx_mode(self):
+		''' This stop the HackRf in receive mode '''
+		result = self.device.ctrl_transfer(HackRfConstants.HACKRF_DEVICE_OUT,
+			HackRfVendorRequest.HACKRF_VENDOR_REQUEST_SET_TRANSCEIVER_MODE,
+			HackRfTranscieverMode.HACKRF_TRANSCEIVER_MODE_OFF, 0)
+		if result == 0:
+			logger.debug('Successfully stop HackRf in Recieve Mode')
+			return HackRfConstants.HACKRF_SUCCESS
+		else:
+			logger.error('Failed to stop HackRf in Recieve Mode')
+
+	def create_transfer_thread(self):
+		if self.transfer_thread_started == False:
+			self.thread = threading.Thread(target=transfer_threadproc, args=(self, 1))
+			self.thread.start()
+			self.transfer_thread_started = True
+		else:
+			return HackRfConstants.HACKRF_ERROR
+		return HackRfConstants.HACKRF_SUCCESS
+
+	def kill_transfer_thread(self):
+		self.do_exit = True
+		self.thread.join()
+		return HackRfConstants.HACKRF_SUCCESS
+
+
+def transfer_threadproc(hackrf,int):
+	#const uint8_t endpoint_address = LIBUSB_ENDPOINT_IN | 1;
+	buf = []
+	size = 0
+	#size = hackrf.device.read(HackRfConstants.LIBUSB_ENDPOINT_IN | 1, buf, 100)  #read(self, endpoint, size_or_buffer, timeout = None):
+	hackrf.callback(buf, size)
+
+
+
+
+

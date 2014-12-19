@@ -20,6 +20,7 @@ body {
 
 #header {
 	color: #090909;
+	text-align: center;
 }
 
 #header h1 {
@@ -42,7 +43,6 @@ body {
  * be class rather than ID based */
 
 #tuner {
-	height: 272px;
 	padding: 5px;
 }
 
@@ -52,23 +52,20 @@ body {
 }
 
 #tunerlcd {
-	width: 550px;
 	height: 136px;
-	position: relative;
+/*	position: relative;*/
 }
 
 div.waterfall {
-	width: 512px;
-	height: 128px;
+	height: 264px;
 	position: relative;
 	background-color: #090909;
-	padding: 4px 19px;
 }
 
 canvas.waterfall {
+	width: 100%;
+	height: 264px;
 	position: absolute;
-	left: 19px;
-	top: 4px;
 }
 
 #waterfall-canvas {
@@ -79,44 +76,49 @@ canvas.waterfall {
 	z-index: 1;
 }
 
-#tunercontrols {
-	width: 200px;
-	float: left;
+div.spectrum {
+	height: 128px;
+	position: relative;
+	background-color: #090909;
+}
+canvas.spectrum {
+	width: 100%;
+	height: 128px;
+	position: absolute;
 }
 
-#tunerinfo {
-	padding-left: 205px;
-	padding-right: 555px;
+#spectrum-canvas {
+	z-index: 0;
 }
 
-#tunerdisplays {
-	width: 550px;
-	float: right;
+#spectrum-scale-canvas {
+	z-index: 1;
 }
+
 
 /* Receivers */
 
 #rxtabs {
+
 	padding: 5px;
 }
 
-.receiver {
-
-}
-
-.rxdisplays {
-	width: 350px;
-	float: right;
-}
 
 .rxlcd {
-	width: 350px;
-	height: 112px;
+	height: 136px;
 	position: relative;
 }
 
-.rxcontrols {
-	padding-right: 360px;
+.rxoptions {
+
+
+}
+.rxcontrol {
+
+}
+.rxinfo {
+
+
 }
 
 /* Page footer */

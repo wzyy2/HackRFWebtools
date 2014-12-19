@@ -9,6 +9,12 @@ function Waterfall(waterfall_target, scale_target) {
 		this.scale_context = null;
 	}
 
+	this.canvas.width = $('#waterfall').width();
+	this.canvas.height = $('#waterfall').height();
+	this.scale_canvas.width = this.canvas.width;
+	this.scale_canvas.height = this.canvas.height;
+
+
 	this.centreFrequency = 0;
 	this.sampleRate = 0;
 	this.nMarkers = 3; // number of markers either side of centre
@@ -16,21 +22,13 @@ function Waterfall(waterfall_target, scale_target) {
 	// Create waterfall colour scheme
 	this.palette = new Array();
 	for (var n = 0; n < 256; n++) {
-		var r,g,b;
-		if (n < 64) {
-			r = 0; g = 0; b = n * 4;
-		} else if (n < 128) {
-			r = 0; g = (n - 64) * 4; b = 255;
-		} else if (n < 192) {
-			r = (n - 128) * 4; g = 255; b = 255 - (n - 128) * 4;
-		} else {
-			r = 255; g = 255 - (n - 192) * 4; b = 0;
-		}
-
-//		r = 0; g = n; b = 0; //matrix!
+		var r, g, b;
+		r = 255 - n;
+		g = 255 - n;
+		b = n;
+		//		r = 0; g = n; b = 0; //matrix!
 		this.palette.push("rgba(" + r + "," + g + "," + b + ", 0.5)");
 	}
-
 	// Pre-fill canvas
 	this.context.fillStyle = "black";
 	this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -80,7 +78,7 @@ Waterfall.prototype.redrawScale = function() {
 	ctx.beginPath();
 	for (n = 1; n < this.nMarkers * 2; n++) {
 		var xpos = n * w / this.nMarkers / 2;
-		
+
 		ctx.moveTo(xpos, 0);
 		ctx.lineTo(xpos, h - 15);
 	}
@@ -92,7 +90,7 @@ Waterfall.prototype.redrawScale = function() {
 Waterfall.prototype.update = function(series) {
 	var ctx = this.context;
 	var w = this.canvas.width / series.length;
-	
+
 	function colour(self, val) {
 		val = val * 255.0;
 		val = Math.floor(val);
@@ -100,7 +98,7 @@ Waterfall.prototype.update = function(series) {
 		if (val > 255) val = 255;
 		return self.palette[val];
 	}
-	
+
 	// Draw new series into first row
 	for (var bin = 0; bin < series.length; bin++) {
 		ctx.fillStyle = colour(this, (series[bin] + 50.0) / 25.0); // x2 here for some reason?
@@ -114,6 +112,6 @@ Waterfall.prototype.scroll = function() {
 	var h = this.canvas.height;
 
 	// Copy image one row lower
-	var image = ctx.getImageData(0,0,w,h - 1);
+	var image = ctx.getImageData(0, 0, w, h - 1);
 	ctx.putImageData(image, 0, 1);
 }

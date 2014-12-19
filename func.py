@@ -1,8 +1,19 @@
 import traceback
+import thread 
+import random
+import math
 from HackRFWebtools import settings
 #from libhackrf import *
 
 _funclist = {}
+modulation = 'AM'
+centre_frequency = 100000000
+sample_rate =  10000000
+rf_gain = 14
+if_gain = 10
+bb_gain = 10
+bb_bandwidth = 0
+
 
 def reg_func(func,param_types,param_defaults):
     ret = False
@@ -32,24 +43,110 @@ def call_func(name,params):
 # ret:total_page as int,total as int,programs as array
 
 def test(params):
-    ret=dict()
-    ret['count']=100
-    ret['retstr']="hello word"
+    ret = dict()
+    ret['count'] = 100
+    ret['retstr'] = "hello word"
     return ret
     
 def get_board_data(params):
-    ret=dict()
-    ret['board_id']=100
-    ret['version']="hello word"
-    ret['serial_nr']="hello word"    
+    ret = dict()
+    ret['board_id'] = 100
+    ret['version'] = "hello word"
+    ret['serial_nr'] = "hello word"    
     return ret
 
 def set_centre_frequency(params):
-    ret=dict()
+    global centre_frequency
+    ret = dict()
     print params['centre_frequency']
+    centre_frequency = params['centre_frequency']
+    return ret
+
+def waterfall(params):
+    global centre_frequency
+    global sample_rate    
+    ret = dict()
+    ret['centre_frequency'] = centre_frequency
+    ret['sample_rate'] = sample_rate
+    i = 500.0
+    arr = []
+    while(i > 0):
+        i -= 1
+        arr.append((math.sin(i / 8) + 1) * 30 - 50 )  # -1 ~1
+        # arr.append(-10)
+    ret['data'] = arr   #512  -50~-10
+    return ret
+
+def get_board_frequency(params):
+    global centre_frequency
+    global rf_gain
+    global if_gain
+    global bb_gain
+    ret = dict()
+    ret['centre_frequency'] =centre_frequency
+    ret['rf_gain'] = rf_gain
+    ret['if_gain'] = if_gain
+    ret['bb_gain'] = bb_gain
+    ret['agc'] = True
+    return ret
+
+def demodulator(params):
+    global modulation
+    ret = dict()
+    print params['demodulator']
+    modulation = params['demodulator']
+    return ret
+
+def get_rec_data(params):
+    global modulation
+    ret = dict()
+    ret['demodulator'] = modulation
+    ret['bb_bandwidth'] = bb_bandwidth
+    ret['squelch_threshold'] = 10
+    return ret
+
+def set_bb_bandwidth(params):
+    global bb_bandwidth
+    ret = dict()
+    bb_bandwidth = params['bb_bandwidth']
+    return ret
+
+def set_rf_gain(params):
+    global rf_gain
+    ret = dict()
+    rf_gain = params['value']
+    return ret
+
+def set_if_gain(params):
+    global if_gain
+    ret = dict()
+    if_gain = params['value']
+    return ret
+
+def set_bb_gain(params):
+    global bb_gain
+    ret = dict()
+    bb_gain = params['value']
     return ret
 
 reg_func(test,{},{})
 reg_func(get_board_data,{},{})
 reg_func(set_centre_frequency,{},{})    
+reg_func(waterfall,{},{})    
+reg_func(get_board_frequency,{},{})    
+reg_func(demodulator,{},{})    
+reg_func(set_bb_bandwidth,{},{})    
+reg_func(get_rec_data,{},{}) 
+reg_func(set_rf_gain,{},{}) 
+reg_func(set_if_gain,{},{}) 
+reg_func(set_bb_gain,{},{}) 
 
+def hackrf_rx_callback():
+    return 1
+
+def  start_rx(params):
+    ret = dict()
+    #hackrf_start_rx( _dev, _hackrf_rx_callback, (void *)this );
+    return ret
+
+reg_func(start_rx,{},{}) 
