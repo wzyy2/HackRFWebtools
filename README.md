@@ -7,7 +7,7 @@ The project is based on [webradio's front-end](https://github.com/mikestir/webra
 It can be used to control  HackRF from a browser.<br>
 (๑•́ ₃•̀๑) the application is built on [pyhackrf](https://github.com/wzyy2/HackRFWebtools/tree/master/pyhackrf "pyhackrf")
 (I update it to bulk read/write ) rather than GNU Radio  which make  it possible for software  to use less space, so that i can run it  in a embedded platform(such as  Raspberry Pi) .Then I  can put my HackRF  in place.<br>
-(π__π) So it may seems  simple.if You're looking for  a more powerful WebSDR,you can try [shinysdr](https://github.com/kpreid/shinysdr "shinysdr") .
+(π__π) It may seems  simple.if You're looking for  a more powerful WebSDR,you can try [shinysdr](https://github.com/kpreid/shinysdr "shinysdr") .
 
 # Features #
 * You can find in the picture
