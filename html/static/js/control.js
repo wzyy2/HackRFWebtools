@@ -105,11 +105,35 @@ $(function() {
 			});
 		}
 		});
-	$("#STARTRX").button();
-//		$("#rxtabs").tabs();
+	
+	$( "#status_control" ).buttonset();
+	$("#STARTRX").click(function(event) {
+		$.ajax({
+			url: '/do',
+			type: 'GET',
+			dataType: 'json',
+			data: {'method' : 'start_rx' }		
+		});
+	});
+	$("#STOP").click(function(event) {
+		$.ajax({
+			url: '/do',
+			type: 'GET',
+			dataType: 'json',
+			data: {'method' : 'stop' }		
+		});
+	});
+	$("#STARTTX").click(function(event) {
+		$.ajax({
+			url: '/do',
+			type: 'GET',
+			dataType: 'json',
+			data: {'method' : 'start_tx' }		
+		});
+	});
 
 	$("#rx0bbbandwidth").slider({
-		min: 1750000,
+		min: 0,
 		max: 28000000,
 		step: 200,
 		animate: true,
@@ -219,7 +243,7 @@ $(document).ready(function() {
 		crossDomain: true,
 		success: function(info) {
 			$("#tunerinfotext").html(
-				"Board id: " + info['board_id'] + "<br/>" +
+				"Board Name: " + info['board_name'] + "<br/>" +
 				"Version: " + info['version'] + "<br/>" +
 				"Serial Number: " + info['serial_nr'] + "<br/>" 
 				);
@@ -230,27 +254,26 @@ $(document).ready(function() {
 	$.ajax({
 		url: '/do',
 		type: 'GET',
-		data    : {'method':'get_board_frequency'},
+		data    : {'method':'get_control_options'},
 		dataType: 'json',
 		success: function(control) {
 			lcdFrequency.setIntValue(control['centre_frequency'] / 10);
-			rx0lcdFrequency.setIntValue(control['centre_frequency'] / 10);
+			//rx0lcdFrequency.setIntValue(control['centre_frequency'] / 10);
 			
 			$("#rfgain").slider("value", control['rf_gain']);
 			$("#ifgain").slider("value", control['if_gain']);
 			$("#bbgain").slider("value", control['bb_gain']);
-			$("#AGC").attr("checked", control['agc']).button("refresh");
-		}
-		});
-		
-	// Get receiver data
-	$.ajax({
-		url: '/do',
-		type: 'GET',
-		dataType: 'json',
-		data    : {'method':'get_rec_data'},
-		success: function(info) {
-			var demod = info['demodulator'];
+			//				
+			if(control['current_status'] == 0) {
+				$("#STOP").attr("checked", true);
+			} else if(control['current_status'] == 1) {
+				$("#STARTRX").attr("checked", true);
+			} else if(control['current_status'] == 2) {
+				$("#STARTTX").attr("checked", true);
+			}
+			$( "#status_control" ).buttonset("refresh");
+
+			var demod = control['demodulator'];
 			if (demod == "AM") {
 				$("#rx0modulationAM").click();
 			} else if (demod == "FM") {
@@ -260,8 +283,9 @@ $(document).ready(function() {
 			} else if (demod == "LSB") {
 				$("#rx0modulationLSB").click();
 			}
-			$("#rx0bbbandwidth").slider("value", info['bb_bandwidth']);
-			$("#rx0squelch").slider("value", info['squelch_threshold']);
+			$("#rx0bbbandwidth").slider("value", control['bb_bandwidth']);
+			$("#rx0squelch").slider("value", control['squelch_threshold']);
 		}
-		});			
+		});
+					
 });

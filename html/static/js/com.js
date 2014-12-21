@@ -1,4 +1,4 @@
-var welcomemsg="hello ,this project have not finished,if you have question,please connect me,QQ:1315469509 ,email:zk_michael@qq.com";
+var welcomemsg="hello";
 
 console.debug(welcomemsg);
 

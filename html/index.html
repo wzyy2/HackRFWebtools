@@ -7,11 +7,13 @@
 	<link rel="stylesheet" href="/static/css/bootstrap.min.css" type="text/css" /> 
 	<link rel="stylesheet" href="/static/jquery/themes/base/jquery.ui.all.css" />
 	<link rel="stylesheet" href="/static/css/master.css" type="text/css" /> 
+	<link rel="shortcut icon" href="/static/default-logo.png">
 </head>
 <body>
 	<div class="container">
 		<div id="header">
-			<h1>HackRF Webtools</h1>
+			<img src="/static/default-logo.png"   style="height:33px; float:left; padding-right:15px; padding-bottom: 8px;"/>
+			<h1>  HackRF Webtools</h1>
 		</div>
 		<div id="tuner" class="ui-widget-content ui-corner-all">
 			<div class="row clearfix">
@@ -27,13 +29,13 @@
 							</div>
 						</div> -->
 						<div id="tunerlcd" class="lcd ui-corner-all">
-							<div class="lcd" style="position:absolute; left: 35px; top: 15px;">
+							<div class="lcd" style="position:absolute; left: 35px; top: 12px;">
 								<span class="lcd">VFO</span>
 							</div>
-							<div id="lcdbg" class="lcd" style="position: absolute; left: 35px; top: 40px;">
-								<canvas class="lcd" id="lcdFrequency" width="360" height="64"></canvas>
+							<div id="lcdbg" class="lcd" style="position: absolute; left: 35px; top: 37px;">
+								<canvas class="lcd" id="lcdFrequency" width="360" height="50"></canvas>
 								<span class="lcd">MHz</span>
-								<canvas class="lcd" id="lcdMemory" width="80" height="24"></canvas>
+								<canvas class="lcd" id="lcdMemory" width="80" height="22"></canvas>
 							</div>
 						</div>
 						<div id="spectrum" class="spectrum ui-corner-all">
@@ -95,8 +97,10 @@
 						<div id="bbgain" class="control"></div>
 						<span class="control">Baseband Filter Bandwidth:</span>
 						<div id="rx0bbbandwidth" class="control"></div>
-						<div id="agc" class="control" style="padding-top:25px">
-							<input type="checkbox" id="STARTRX" class="control" /><label for="STARTRX">START RX</label>
+						<div id="status_control" class="control" style="padding-top:25px">
+							<input type="radio" id="STARTRX" name="status_control" class="control" /><label for="STARTRX">START RX</label>
+							<input type="radio" id="STARTTX" name="status_control" class="control" /><label for="STARTTX">START TX</label>
+							<input type="radio" id="STOP" name="status_control" class="control"  /><label for="STOP">STOP</label>
 						</div>
 					</div>	
 				</div>
@@ -110,7 +114,7 @@
 					</div>	
 					<div id="rx0fft" class="rxcolumn rxfft">
 						<p class="sectionheader ui-state-default ui-corner-all" style="margin-top:10px;">
-							<span class="ui-icon ui-icon-signal" style="float: left; margin: 2px 5px 0 0;"></span>
+							<span class="ui-icon ui-icon-wrench" style="float: left; margin: 2px 5px 0 0;"></span>
 							FFT Settings
 						</p>
 					</div>	

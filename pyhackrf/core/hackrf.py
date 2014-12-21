@@ -58,7 +58,7 @@ HackRfConstants = enum(
 	HACKRF_DEVICE_OUT = 0x40,
 	HACKRF_DEVICE_IN = 0xC0,
 	HACKRF_USB_VID = 0x1d50,
-	HACKRF_USB_PID = 0x604b,
+	HACKRF_USB_PID = 0x6089,
 	HACKRF_SUCCESS = 0,
 	#Python defaults to returning none 
 	HACKRF_ERROR = None)
@@ -74,10 +74,13 @@ class HackRf():
 	''' This is the base object for the HackRf Device, and interaction with it '''
 	__JELLYBEAN__ = 'Jellybean'
 	__JAWBREAKER__ = 'Jawbreaker'
-	NAME_LIST = [__JELLYBEAN__, __JAWBREAKER__]
+	__ONE = 'HackRF ONE'
+	NAME_LIST = [__JELLYBEAN__, __JAWBREAKER__, __ONE]
 
 	def __init__(self):
 		self.name = None
+		self.version = None
+		self.serial_num = None
 		self.device = None
 		self.max2837 = None
 		self.si5351c = None
@@ -90,7 +93,6 @@ class HackRf():
 	def setup(self):
 		''' This is to setup a hackrf device '''
 		self.device = usb.core.find(idVendor=HackRfConstants.HACKRF_USB_VID, idProduct=HackRfConstants.HACKRF_USB_PID)
-		self.device.set_configuration(1)
 		# get an endpoint instance
 		# cfg = self.device.get_active_configuration()
 		# access the first interface
@@ -104,6 +106,8 @@ class HackRf():
 			self.max2837 = Max2837(self)
 			self.si5351c = SI5351C(self)
 			self.rffc5071 = RFFC5071(self)
+			self.version = self.get_version_string()
+			self.serial_num = self.get_board_serial_number()
 			board_id = self.get_board_id()
 			if isinstance( board_id, ( int, long )):
 				self.name = self.NAME_LIST[board_id]
@@ -207,9 +211,11 @@ class HackRf():
 		else:
 			logger.error('Error setting frequency, value should be of type INT or LONG')
 
-	def set_sample_rate(self, freq, div):
+	def set_sample_rate(self, freq_hz):
 		''' Sets the sample rate of the hack rf device '''
-		if isinstance( freq, ( int, long )) and isinstance( div, ( int, long )):
+		if isinstance( freq_hz, ( int, long )):
+			div = 1
+			freq = freq_hz * div 
 			#Make a C struct with the values
 			p =  struct.pack('>II', freq, div)
 
@@ -308,21 +314,20 @@ class HackRf():
 		else:
 			logger.error('Failed to disable Amp')
 
-	def set_rx_mode(self, callback):
+	def set_rx_mode(self):
 		''' This sets the HackRf in receive mode '''
-		# result = self.device.ctrl_transfer(HackRfConstants.HACKRF_DEVICE_OUT,
-		# 	HackRfVendorRequest.HACKRF_VENDOR_REQUEST_SET_TRANSCEIVER_MODE,
-		# 	HackRfTranscieverMode.HACKRF_TRANSCEIVER_MODE_RECEIVE, 0)
-		result = 0;
+		result = self.device.ctrl_transfer(HackRfConstants.HACKRF_DEVICE_OUT,
+			HackRfVendorRequest.HACKRF_VENDOR_REQUEST_SET_TRANSCEIVER_MODE,
+			HackRfTranscieverMode.HACKRF_TRANSCEIVER_MODE_RECEIVE, 0)
 		if result == 0:
-			self.callback = callback
-			self.create_transfer_thread()
+			# self.callback = callback
+			# self.create_transfer_thread()
 			logger.debug('Successfully set HackRf in Recieve Mode')
 			return HackRfConstants.HACKRF_SUCCESS
 		else:
 			logger.error('Failed to set HackRf in Recieve Mode')
 
-	def set_tx_mode(self, callback):
+	def set_tx_mode(self):
 		''' This sets the HackRf in tranfer mode '''
 		result = self.device.ctrl_transfer(HackRfConstants.HACKRF_DEVICE_OUT,
 			HackRfVendorRequest.HACKRF_VENDOR_REQUEST_SET_TRANSCEIVER_MODE,

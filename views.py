@@ -6,20 +6,26 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 import threading
 import traceback
-from func import *
 from common import js_handler
 import os
 import datetime 
 from pyhackrf.core import HackRf 
+from func import *
 
-hackrf = HackRf()
-htmldir = os.path.join(os.path.dirname(__file__), 'html').replace('\\','/')
+
 def requires_hackrf(view):
     def new_view(request, *args, **kwargs):
-        # if hackrf.device == None:
-        #     hackrf.setup()
-        #     if hackrf.device == None:               
-        #         return  HttpResponse('No Hack Rf Detected!')
+        if hackrf.device == None:
+            hackrf.setup()
+            #init
+            hackrf.set_frequency(centre_frequency)
+            hackrf.set_sample_rate(sample_rate)
+            # hackrf.disable_amp()
+            # hackrf.set_lna_gain(if_gain)
+            # hackrf.set_vga_gain(bb_gain)    
+            # hackrf.set_baseband_filter_bandwidth(bb_bandwidth)  
+            if hackrf.device == None:               
+                return  HttpResponse('No Hack Rf Detected!')
         return view(request, *args, **kwargs)                       
     return new_view                                                  
 
