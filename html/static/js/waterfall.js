@@ -22,13 +22,21 @@ function Waterfall(waterfall_target, scale_target) {
 	// Create waterfall colour scheme
 	this.palette = new Array();
 	for (var n = 0; n < 256; n++) {
-		var r, g, b;
-		r = 255 - n;
-		g = 255 - n;
-		b = n;
-		//		r = 0; g = n; b = 0; //matrix!
+		var r,g,b;
+		if (n < 64) {
+			r = 0; g = 0; b = n * 4;
+		} else if (n < 128) {
+			r = 0; g = (n - 64) * 4; b = 255;
+		} else if (n < 192) {
+			r = (n - 128) * 4; g = 255; b = 255 - (n - 128) * 4;
+		} else {
+			r = 255; g = 255 - (n - 192) * 4; b = 0;
+		}
+
+//		r = 0; g = n; b = 0; //matrix!
 		this.palette.push("rgba(" + r + "," + g + "," + b + ", 0.5)");
 	}
+	
 	// Pre-fill canvas
 	this.context.fillStyle = "black";
 	this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
@@ -101,7 +109,7 @@ Waterfall.prototype.update = function(series) {
 
 	// Draw new series into first row
 	for (var bin = 0; bin < series.length; bin++) {
-		ctx.fillStyle = colour(this, (series[bin] + 50.0) / 25.0); // x2 here for some reason?
+		ctx.fillStyle = colour(this, series[bin]  * 255); // x2 here for some reason?
 		ctx.fillRect(Math.floor(bin * w), 0, Math.ceil(w), 1);
 	}
 }

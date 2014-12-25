@@ -4,6 +4,7 @@ from django.db import models
 from django.utils import simplejson as json
 from django.core.serializers.json import DateTimeAwareJSONEncoder
 from decimal import *
+
 def encode(data):
     """
     The main issues with django's default json serializer is that properties that

@@ -9,23 +9,22 @@ import traceback
 from common import js_handler
 import os
 import datetime 
-from pyhackrf.core import HackRf 
+from pyhackrf import pylibhackrf 
 from func import *
-
 
 def requires_hackrf(view):
     def new_view(request, *args, **kwargs):
-        if hackrf.device == None:
+        global hackrf_settings
+        if hackrf.is_open == False:
             hackrf.setup()
-            #init
-            hackrf.set_frequency(centre_frequency)
-            hackrf.set_sample_rate(sample_rate)
-            # hackrf.disable_amp()
-            # hackrf.set_lna_gain(if_gain)
-            # hackrf.set_vga_gain(bb_gain)    
-            # hackrf.set_baseband_filter_bandwidth(bb_bandwidth)  
-            if hackrf.device == None:               
+            if hackrf.is_open == False: 
                 return  HttpResponse('No Hack Rf Detected!')
+            hackrf.set_freq(hackrf_settings.centre_frequency)
+            hackrf.set_sample_rate(hackrf_settings.sample_rate)
+            hackrf.set_amp_enable(False)
+            hackrf.set_lna_gain(hackrf_settings.if_gain)
+            hackrf.set_vga_gain(hackrf_settings.bb_gain)    
+            hackrf.set_baseband_filter_bandwidth(hackrf_settings.bb_bandwidth)  
         return view(request, *args, **kwargs)                       
     return new_view                                                  
 

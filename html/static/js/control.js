@@ -2,7 +2,7 @@
 var lcdOn = "rgb(9,9,9)"
 var lcdOff = "rgb(180,210,180)"
 var lcdBg = "rgb(196,226,196)"
-
+var current_status = 0
 //canvas resize
 lcdcanvas = document.getElementById("lcdFrequency");
 if ($("#tunerlcd").width() < 500 && $("#tunerlcd").width() > 300) {
@@ -60,7 +60,7 @@ $(function() {
 		step: 14,
 		animate: true,
 		orientation: "horizontal",
-		change: function() {
+		stop: function() {
 			var gain = $("#rfgain").slider("value");
 			console.debug("new gain" + gain + " dB");
 			$.ajax({
@@ -77,7 +77,7 @@ $(function() {
 		step: 8,
 		animate: true,
 		orientation: "horizontal",
-		change: function() {
+		stop: function() {
 			var gain = $("#ifgain").slider("value");
 			console.debug("new gain" + gain + " dB");
 			$.ajax({
@@ -94,7 +94,7 @@ $(function() {
 		step: 2,
 		animate: true,
 		orientation: "horizontal",
-		change: function() {
+		stop: function() {
 			var gain = $("#bbgain").slider("value");
 			console.debug("new gain" + gain + " dB");
 			$.ajax({
@@ -105,32 +105,6 @@ $(function() {
 			});
 		}
 		});
-	
-	$( "#status_control" ).buttonset();
-	$("#STARTRX").click(function(event) {
-		$.ajax({
-			url: '/do',
-			type: 'GET',
-			dataType: 'json',
-			data: {'method' : 'start_rx' }		
-		});
-	});
-	$("#STOP").click(function(event) {
-		$.ajax({
-			url: '/do',
-			type: 'GET',
-			dataType: 'json',
-			data: {'method' : 'stop' }		
-		});
-	});
-	$("#STARTTX").click(function(event) {
-		$.ajax({
-			url: '/do',
-			type: 'GET',
-			dataType: 'json',
-			data: {'method' : 'start_tx' }		
-		});
-	});
 
 	$("#rx0bbbandwidth").slider({
 		min: 0,
@@ -138,7 +112,7 @@ $(function() {
 		step: 200,
 		animate: true,
 		orientation: "horizontal",
-		change: function() {
+		stop: function() {
 			var bandwidth = $("#rx0bbbandwidth").slider("value");
 			console.debug("new bandwidth" + bandwidth + " Hz");
 			
@@ -162,14 +136,19 @@ $(function() {
 	$("input[name='rx0modulation']").change(function(obj) {
 		var mod = obj.target.value; // FIXME: Is this ok?
 		console.debug("new modulation: " + mod);
-		
+
+		function onDataReceived(wf) {
+		}
+					
 		$.ajax({
 			url: '/do',
 			type: 'GET',
 			dataType: 'json',
-			data: { "demodulator" :  mod , 'method' : 'demodulator'}
+			data: { "demodulator" :  mod , 'method' : 'demodulator'},
+			success: onDataReceived
 		});
 	});
+
 });
 
 $(document).ready(function() {
@@ -196,42 +175,53 @@ $(document).ready(function() {
 	// Waterfall
 	var w = new Waterfall("waterfall-canvas", "waterfall-scale-canvas");
 	var s = new Spectrum("spectrum-canvas", "spectrum-scale-canvas");
+	var scrollinterval = null;
+	var fetchinterval = null;
 
-	var scrollinterval = window.setInterval(function () { w.scroll(); }, 50);
-	var fetchinterval = window.setInterval(function() {
-		var url = '/do';
+	function startStreaming(){
+		scrollinterval = window.setInterval(function () { 
+				w.scroll();
+			 }, 50);
+		fetchinterval = window.setInterval(function() {
+			var url = '/do';
 
-		function onDataReceived(wf) {
-			w.setCentreFrequency(wf['centre_frequency']);
-			w.setSampleRate(wf['sample_rate']);
-			w.update(wf['data']);
+			function onDataReceived(wf) {
+				w.setCentreFrequency(wf['centre_frequency']);
+				w.setSampleRate(wf['sample_rate']);
+				w.update(wf['data']);
 
-			s.setCentreFrequency(wf['centre_frequency']);
-			s.setSampleRate(wf['sample_rate']);
-			s.update(wf['data']);
-		}
-		
-		function onConnectionFailed() {
-			$("#dialog").html("Server connection could not be established");
-			$("#dialog").dialog({
-				modal: true,
-				buttons: {
-					Ok: function() { $(this).dialog("close"); }
-					}
-				});
-			clearInterval(scrollinterval);
-			clearInterval(fetchinterval);
-		}
+				s.setCentreFrequency(wf['centre_frequency']);
+				s.setSampleRate(wf['sample_rate']);
+				s.update(wf['data']);
+			}
+			
+			function onConnectionFailed() {
+				$("#dialog").html("Server connection could not be established");
+				$("#dialog").dialog({
+					modal: true,
+					buttons: {
+						Ok: function() { $(this).dialog("close"); }
+						}
+					});
+				clearInterval(scrollinterval);
+				clearInterval(fetchinterval);
+			}
 
-		$.ajax({
-			url: url,
-			type: 'GET',
-			data    : {'method':'waterfall'},
-			dataType: 'json',
-			success: onDataReceived,
-			error: onConnectionFailed,
-		});
-	}, 200);
+			$.ajax({
+				url: url,
+				type: 'GET',
+				data    : {'method':'waterfall'},
+				dataType: 'json',
+				success: onDataReceived,
+				error: onConnectionFailed,
+			});
+		}, 200);
+	}	
+
+	function stopStreaming(){
+		clearInterval(scrollinterval);
+		clearInterval(fetchinterval);
+	}
 	
 	// Get board data
 	$.ajax({
@@ -244,8 +234,8 @@ $(document).ready(function() {
 		success: function(info) {
 			$("#tunerinfotext").html(
 				"Board Name: " + info['board_name'] + "<br/>" +
-				"Version: " + info['version'] + "<br/>" +
-				"Serial Number: " + info['serial_nr'] + "<br/>" 
+				"Version: " + info['version'] + "<br/>" 
+				// + "Serial Number: " + info['serial_nr'] + "<br/>" 
 				);
 		}
 		});
@@ -265,27 +255,73 @@ $(document).ready(function() {
 			$("#bbgain").slider("value", control['bb_gain']);
 			//				
 			if(control['current_status'] == 0) {
+				stopStreaming();
+				current_status = 0
 				$("#STOP").attr("checked", true);
 			} else if(control['current_status'] == 1) {
+				current_status = 1
+				startStreaming();
 				$("#STARTRX").attr("checked", true);
 			} else if(control['current_status'] == 2) {
+				startStreaming();
+				current_status = 2
 				$("#STARTTX").attr("checked", true);
 			}
 			$( "#status_control" ).buttonset("refresh");
 
 			var demod = control['demodulator'];
 			if (demod == "AM") {
-				$("#rx0modulationAM").click();
+				$("#rx0modulationAM").attr("checked", true);
 			} else if (demod == "FM") {
-				$("#rx0modulationFM").click();
+				$("#rx0modulationFM").attr("checked", true);
 			} else if (demod == "USB") {
-				$("#rx0modulationUSB").click();
+				$("#rx0modulationUSB").attr("checked", true);
 			} else if (demod == "LSB") {
-				$("#rx0modulationLSB").click();
+				$("#rx0modulationLSB").attr("checked", true);
 			}
+			$("#rx0modulation").buttonset("refresh");
+
 			$("#rx0bbbandwidth").slider("value", control['bb_bandwidth']);
 			$("#rx0squelch").slider("value", control['squelch_threshold']);
 		}
 		});
+
+	$( "#status_control" ).buttonset();
+	$("#STARTRX").click(function(event) {	
+		if(current_status == 0) {
+			startStreaming();
+		}
+		$.ajax({
+			url: '/do',
+			type: 'GET',
+			dataType: 'json',
+			data: {'method' : 'start_rx' }		
+		});
+		current_status = 1;
+	});
+	$("#STOP").click(function(event) {
+		current_status = 0;
+		stopStreaming();
+		$.ajax({
+			url: '/do',
+			type: 'GET',
+			dataType: 'json',
+			data: {'method' : 'stop' }		
+		});
+	});
+	$("#STARTTX").click(function(event) {
+		if(current_status == 0) {
+			startStreaming();
+		}
+		$.ajax({
+			url: '/do',
+			type: 'GET',
+			dataType: 'json',
+			data: {'method' : 'start_tx' }		
+		});
+		current_status = 2;
+	});
+
+
 					
 });

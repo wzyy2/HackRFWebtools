@@ -1,21 +1,33 @@
 import traceback
-import thread 
-import random
-import math
+import threading 
+import random,ctypes
+import math,time
 from HackRFWebtools import settings
-from pyhackrf.core import HackRf 
+from pyhackrf import pylibhackrf 
+from threading import Lock
+import numpy as np
+import pylab as pl
 
-hackrf = HackRf()
+#default setting
+class HackrfSettings():
+    def __init__(self):
+        self.modulation = 'NO'
+        self.centre_frequency = 100 * 1000 * 1000
+        self.sample_rate = 8 * 1000 * 1000
+        self.rf_gain = 0
+        self.if_gain = 16
+        self.bb_gain = 20
+        self.bb_bandwidth = 1* 1000 * 1000
+        self.current_status = 0  #0 stop 1 rx 2 tx
+        self.name = None
+        self.version = None
+        self.serial_num = None
+
+hackrf = pylibhackrf.HackRf()
+hackrf_settings = HackrfSettings()
 _funclist = {}
-
-modulation = 'AM'
-centre_frequency = 100000000
-sample_rate =  10000000
-rf_gain = 0
-if_gain = 16
-bb_gain = 20
-bb_bandwidth = 0
-current_status = 0  #0 stop 1 rx 2 tx
+spectrum = []
+spectrum_lock = Lock()
 
 def reg_func(func,param_types,param_defaults):
     ret = False
@@ -52,122 +64,158 @@ def test(params):
     
 def get_board_data(params):
     ret = dict()
-    ret['board_name'] = hackrf.name
-    ret['version'] = hackrf.version
-    ret['serial_nr'] = hackrf.serial_num
+    ret['board_name'] = hackrf_settings.name
+    ret['version'] = hackrf_settings.version
+    ret['serial_nr'] = hackrf_settings.serial_num
     return ret
 
 def set_centre_frequency(params):
-    global centre_frequency
     ret = dict()
-    print params['centre_frequency']
-    centre_frequency = int(params['centre_frequency'])
-    hackrf.set_frequency(centre_frequency)
+    hackrf_settings.centre_frequency = int(params['centre_frequency'])
+    hackrf.set_freq(hackrf_settings.centre_frequency)
     return ret
 
 def waterfall(params):
-    global centre_frequency
-    global sample_rate    
     ret = dict()
-    ret['centre_frequency'] = centre_frequency
-    ret['sample_rate'] = sample_rate
-    i = 500.0
-    arr = []
-    while(i > 0):
-        i -= 1
-        arr.append((math.sin(i / 8) + 1) * 30 - 50 )  # -1 ~1
+    ret['centre_frequency'] = hackrf_settings.centre_frequency
+    ret['sample_rate'] = hackrf_settings.sample_rate
+    arr = list()
+    spectrum_lock.acquire() 
+    maxval = 0
+    for i in range(len(spectrum)):
+        if i % 100 == 1:
+            if maxval < abs(spectrum[i]):
+                maxval = abs(spectrum[i]);
+            arr.append(abs(spectrum[i]))  # -1 ~1
         # arr.append(-10)
+    spectrum_lock.release()
     ret['data'] = arr   #512  -50~-10
+    print maxval
     return ret
 
 def get_control_options(params):
-    global centre_frequency
-    global rf_gain
-    global if_gain
-    global bb_gain
     ret = dict()
-    ret['centre_frequency'] =centre_frequency
-    ret['rf_gain'] = rf_gain
-    ret['if_gain'] = if_gain
-    ret['bb_gain'] = bb_gain
-    ret['demodulator'] = modulation
-    ret['bb_bandwidth'] = bb_bandwidth
+    ret['centre_frequency'] =hackrf_settings.centre_frequency
+    ret['rf_gain'] = hackrf_settings.rf_gain
+    ret['if_gain'] = hackrf_settings.if_gain
+    ret['bb_gain'] = hackrf_settings.bb_gain
+    ret['demodulator'] = hackrf_settings.modulation
+    ret['bb_bandwidth'] = hackrf_settings.bb_bandwidth
     ret['squelch_threshold'] = 10
-    ret['current_status'] = current_status
+    ret['current_status'] = hackrf_settings.current_status
     return ret
 
 def demodulator(params):
-    global modulation
     ret = dict()
     print params['demodulator']
-    modulation = params['demodulator']
+    hackrf_settings.modulation = params['demodulator']
     return ret
 
 def set_bb_bandwidth(params):
-    global bb_bandwidth
     ret = dict()
-    bb_bandwidth = int(params['bb_bandwidth'])
-    hackrf.set_baseband_filter_bandwidth(bb_bandwidth)    
+    hackrf_settings.bb_bandwidth = int(params['bb_bandwidth'])
+    hackrf.set_baseband_filter_bandwidth(hackrf_settings.bb_bandwidth)    
     return ret
 
 def set_rf_gain(params):
-    global rf_gain
     ret = dict()
-    rf_gain = int(params['value'])
-    if rf_gain != 0:
-        hackrf.enable_amp()
+    hackrf_settings.rf_gain = int(params['value'])
+    if hackrf_settings.rf_gain != 0:
+        hackrf.set_amp_enable(True)
     else:
-        hackrf.disable_amp()
+        hackrf.set_amp_enable(False)
     return ret
 
 def set_if_gain(params):
-    global if_gain
     ret = dict()
-    if_gain = int(params['value'])
-    hackrf.set_lna_gain(if_gain)
+    hackrf_settings.if_gain = int(params['value'])
+    hackrf.set_lna_gain(hackrf_settings.if_gain)
     return ret
 
 def set_bb_gain(params):
-    global bb_gain
     ret = dict()
-    bb_gain = int(params['value'])
-    hackrf.set_vga_gain(bb_gain)  
+    hackrf_settings.bb_gain = int(params['value'])
+    hackrf.set_vga_gain(hackrf_settings.bb_gain)  
     return ret
 
 reg_func(test,{},{})
 reg_func(get_board_data,{},{})
 reg_func(set_centre_frequency,{},{})    
-reg_func(waterfall,{},{})    
 reg_func(get_control_options,{},{})    
 reg_func(demodulator,{},{})    
 reg_func(set_bb_bandwidth,{},{})    
 reg_func(set_rf_gain,{},{}) 
 reg_func(set_if_gain,{},{}) 
 reg_func(set_bb_gain,{},{}) 
+reg_func(waterfall,{},{})    
 
+transfer_lock = Lock()
+time1= time.time()
+have_recv = False
+all_cnt = 0
+transfer_lbuf = []
+
+class RxThread(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.running = True
+    def run(self):
+        global have_recv,transfer_lbuf,spectrum 
+        #note: we don't set self.running to False anywhere...
+        while self.running:
+            transfer_lock.acquire()  
+            if have_recv == True:
+                iq = hackrf.packed_bytes_to_iq(transfer_lbuf)
+                transfer_lock.release()  
+                spectrum_lock.acquire() 
+                spectrum = np.fft.fft(iq) / iq.size
+                spectrum_lock.release()  
+                have_recv = False    
+            else:
+                transfer_lock.release()  
+
+thread = RxThread()
+
+def rx_callback_fun(hackrf_transfer):
+    global have_recv,all_cnt,time1,transfer_lbuf 
+    transfer_lock.acquire() 
+    length = hackrf_transfer.contents.valid_length
+    array_type = (ctypes.c_ubyte*length)
+    values = ctypes.cast(hackrf_transfer.contents.buffer, ctypes.POINTER(array_type)).contents
+    all_cnt += length
+    if time.time() - time1 > 1:
+        time1 = time.time()
+        print all_cnt
+        all_cnt = 0
+    transfer_lbuf = values
+    have_recv = True
+    transfer_lock.release()          
+    return 0
 
 def  start_rx(params):
-    global current_status
     ret = dict()
-    hackrf.set_rx_mode()
-    current_status = 1
+    if hackrf_settings.current_status == 0:
+        hackrf.start_rx_mode(rx_callback_fun)
+    hackrf_settings.current_status = 1
+    thread.start()
     return ret
 
 def  start_tx(params):
-    global current_status
     ret = dict()
-    hackrf.set_tx_mode()
-    current_status = 2
+    if hackrf_settings.current_status == 0:
+        hackrf.start_tx_mode(rx_callback_fun)
+    hackrf_settings.current_status = 2
     return ret
 
 def  stop(params):
-    global current_status
     ret = dict()
-    if current_status == 1:
+    if hackrf_settings.current_status == 1:
+        thread.running = False
         hackrf.stop_rx_mode()
-    elif current_status == 2:
-        hackrf.stop_rx_mode()
-    current_status = 0
+    elif hackrf_settings.current_status == 2:
+        hackrf.stop_tx_mode()
+    hackrf_settings.current_status = 0
+    
     return ret
 
 

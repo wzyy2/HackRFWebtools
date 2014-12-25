@@ -133,9 +133,9 @@ Spectrum.prototype.update = function(series) {
 	this.context.strokeStyle = "white";
 	this.context.lineWidth = 0.5;
 	this.context.beginPath();
-	this.context.moveTo(0, ((series[0] + 55) / 80) * this.canvas.height);
+	this.context.moveTo(0, -series[0] * this.canvas.height * 10 +  this.canvas.height / 2 + 10);
 	for (n = 1; n < series.length; n++) {
-		this.context.lineTo(Math.floor(n * w), ((series[n] + 55) / 80) * this.canvas.height);
+		this.context.lineTo(Math.floor(n * w), -series[n] * this.canvas.height * 10 +  this.canvas.height / 2 + 10);
 	}
 	this.context.stroke();
 
