@@ -138,8 +138,7 @@ $(function() {
 		console.debug("new modulation: " + mod);
 
 		function onDataReceived(wf) {
-		}
-					
+		}				
 		$.ajax({
 			url: '/do',
 			type: 'GET',
