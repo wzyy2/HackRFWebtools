@@ -6,17 +6,19 @@ a Web Framework for HackRF. <br>
 The project is based on [webradio's front-end](https://github.com/mikestir/webradio "webradio") and complete [wf4hf's](https://github.com/aguardar/wf4hf "wf4hf") unfinished work.
 It can be used to control  HackRF from a browser.<br>
 The application is built on [py-hackrf-ctypes](https://github.com/wzyy2/py-hackrf-ctypes "py-hackrf-ctypes")
- rather than GNU Radio  , which make  it possible for software  to use less space, so that i can run it  in a embedded platform(such as  Raspberry Pi) .<br>
+ rather than GNU Radio  , which make  it possible for software  to use less space, so that I can run it  in a embedded platform(such as  Raspberry Pi) .<br>
 
 ## Features 
 * You can find in the picture
 
 ##  Dependencies 
 Install python,django
+
         sudo apt-get install python-pip python-dev
         sudo pip install Django==1.6.6
 
 Install libhackrf
+
         git clone --progress http://github.com/mossmann/hackrf.git
         cd hackrf/host
         mkdir build
