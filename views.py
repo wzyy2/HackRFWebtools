@@ -12,6 +12,16 @@ import datetime
 from pyhackrf import pylibhackrf 
 from func import *
 
+def hackrf_reconf():
+        hackrf.set_freq(hackrf_settings.centre_frequency)
+        hackrf.set_sample_rate(hackrf_settings.sample_rate)
+        hackrf.set_amp_enable(False)
+        hackrf.set_lna_gain(hackrf_settings.if_gain)
+        hackrf.set_vga_gain(hackrf_settings.bb_gain)    
+        hackrf.set_baseband_filter_bandwidth(hackrf_settings.bb_bandwidth)  
+        hackrf_settings.name =  hackrf.NAME_LIST[hackrf.board_id_read()]
+        hackrf_settings.version = hackrf.version_string_read()    
+
 def requires_hackrf(view):
     def new_view(request, *args, **kwargs):
         global hackrf_settings
@@ -19,21 +29,28 @@ def requires_hackrf(view):
             hackrf.setup()
             if hackrf.is_open == False: 
                 return  HttpResponse('No Hack Rf Detected!')
-            hackrf.set_freq(hackrf_settings.centre_frequency)
-            hackrf.set_sample_rate(hackrf_settings.sample_rate)
-            hackrf.set_amp_enable(False)
-            hackrf.set_lna_gain(hackrf_settings.if_gain)
-            hackrf.set_vga_gain(hackrf_settings.bb_gain)    
-            hackrf.set_baseband_filter_bandwidth(hackrf_settings.bb_bandwidth)  
+            hackrf_reconf()
         return view(request, *args, **kwargs)                       
     return new_view                                                  
 
-
 def index(request):
+    if request.method == 'GET':  
+        try:  
+            request.GET['reset']
+            stop(None)
+            hackrf_settings.current_status = 0   
+            hackrf.reset()
+            hackrf_reconf()
+        except: 
+            pass
     t = get_template('index.html')
     c = RequestContext(request,locals())
     return HttpResponse(t.render(c))
 
+def about(request):
+    t = get_template('about.html')
+    c = RequestContext(request,locals())
+    return HttpResponse(t.render(c))
 
 ## js api handler
 rk = threading.Lock()

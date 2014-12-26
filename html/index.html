@@ -10,12 +10,23 @@
 	<link rel="shortcut icon" href="/static/default-logo.png">
 </head>
 <body>
-	<div class="container">
-		<div id="header">
-			<img src="/static/default-logo.png"   style="height:33px; float:left; padding-right:15px; padding-bottom: 8px;"/>
-			<h1>  HackRF Webtools</h1>
-		</div>
-		<div id="tuner" class="ui-widget-content ui-corner-all">
+ 	<div id="nav-main" role="navigation" class="navbar navbar-default navbar-static-top">
+ 			<div class="navbar-header">
+ 				<button type="button" data-toggle="collapse" data-target=".navbar-collapse" class="navbar-toggle"><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button>
+ 				<a href="/" class="navbar-brand"><img src="/static/default-logo.png"   style="height:20px; float:left; padding-right:2px; padding-bottom: 2px;"/>HackRF Webtools</a>
+ 			</div>
+ 			<div class="collapse navbar-collapse">
+ 				<ul class="nav navbar-nav">
+ 					<li><a href="/about">About</a></li>
+ 				</ul>
+ 				<ul class="nav navbar-nav navbar-right">
+ 					<li ><a href="/?reset=1" ><span class="glyphicon glyphicon-off"  style="float: left; margin: 0px 6px 0 0; font-size: 1.5em;"></span>Reset</a></li>
+ 				</ul>
+ 			</div>
+ 	</div> 
+
+	<div class="container" >
+		<div id="tuner" class="ui-widget-content ui-corner-all" style="margin-top: 2px;">
 			<div class="row clearfix">
 				<div class="col-md-6 column ui-sortable">
 					<div id="tunerdisplays" class="tunercolumn">
@@ -97,23 +108,24 @@
 						<div id="bbgain" class="control"></div>
 						<span class="control">Baseband Filter Bandwidth:</span>
 						<div id="rx0bbbandwidth" class="control"></div>
-						<div id="status_control" class="control" style="padding-top:25px">
-							<input type="radio" id="STARTRX" name="status_control" class="control" /><label for="STARTRX">START RX</label>
+						<div id="status_control" class="control" style="padding-top:15px">
+							<input type="radio" id="STARTRX" name="status_control" class="control " /><label for="STARTRX">START RX</label>
 							<input type="radio" id="STARTTX" name="status_control" class="control" /><label for="STARTTX">START TX</label>
 							<input type="radio" id="STOP" name="status_control" class="control"  /><label for="STOP">STOP</label>
 						</div>
+
 					</div>	
 				</div>
 				<div class="col-md-4 column ui-sortable">
 					<div id="rx0info" class="rxcolumn rxinfo">
-						<p class="sectionheader ui-state-default ui-corner-all">
+						<p class=" ui-state-default ui-corner-all sectionheader">
 							<span class="ui-icon ui-icon-signal" style="float: left; margin: 2px 5px 0 0;"></span>
 							Board Info
 						</p>
 						<div id="tunerinfotext"></div>
 					</div>	
 					<div id="rx0fft" class="rxcolumn rxfft">
-						<p class="sectionheader ui-state-default ui-corner-all" style="margin-top:10px;">
+						<p class="sectionheader ui-state-default ui-corner-all" style="margin-top:10px; ">
 							<span class="ui-icon ui-icon-wrench" style="float: left; margin: 2px 5px 0 0;"></span>
 							FFT Settings
 						</p>
@@ -124,9 +136,9 @@
 		<div id="status">
 		</div>
 		<div id="footer">
-			<a href="https://greatscottgadgets.com/hackrf/">HackRF</a>
+<!-- 			<a href="https://greatscottgadgets.com/hackrf/">HackRF</a>
 			<a href="https://github.com/mikestir/webradio">WebRadio</a>
-			<a href="https://github.com/wzyy2">Me</a>
+			<a href="https://github.com/wzyy2">Me</a> -->
 		</div>
 		<div id="dialog" title="Information">
 		</div>
@@ -140,6 +152,7 @@
 	<script type="text/javascript" src="/static/jquery/ui/jquery.ui.slider.js"></script>
 	<script type="text/javascript" src="/static/jquery/ui/jquery.ui.button.js"></script>
 	<script type="text/javascript" src="/static/jquery/ui/jquery.ui.dialog.js"></script>
+
 	<script type="text/javascript" src="/static/js/ajax.js"></script>
 	<script type="text/javascript" src="/static/js/com.js"></script>
 	<script type="text/javascript" src="/static/js/segment-display.js"></script>

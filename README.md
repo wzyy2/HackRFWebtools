@@ -5,21 +5,27 @@ a Web Framework for HackRF. <br>
 ##  Introduction 
 The project is based on [webradio's front-end](https://github.com/mikestir/webradio "webradio") and complete [wf4hf's](https://github.com/aguardar/wf4hf "wf4hf") unfinished work.
 It can be used to control  HackRF from a browser.<br>
-(๑•́ ₃•̀๑) The application is built on [pylibhackrf](https://github.com/wzyy2/HackRFWebtools/tree/master/pyhackrf "pylibhackrf")
- rather than GNU Radio  , which make  it possible for software  to use less space, so that i can run it  in a embedded platform(such as  Raspberry Pi) .Then I  can put my HackRF  in place.<br>
-(π__π) It may seems  simple.if you're looking for  a more powerful WebSDR,you can try [shinysdr](https://github.com/kpreid/shinysdr "shinysdr") .
+The application is built on [py-hackrf-ctypes](https://github.com/wzyy2/py-hackrf-ctypes "py-hackrf-ctypes")
+ rather than GNU Radio  , which make  it possible for software  to use less space, so that i can run it  in a embedded platform(such as  Raspberry Pi) .<br>
 
-## About pylibhackrf
-At first,I use pyusb to directly get the data from HackRF, then I found pyusb can only move data at a  rate of  5MiB/S, too slow for HackRF.I also try  ctypes  to calling functions in libhackrf, but it have a trouble between hackrf_device and hackrf_transfer(interdepend) , I didn't konw how to slove it.So I rewrite libhackrf , state hackrf_device *device in lib's code.I have no idea if it will have some bugs when you try to control two hackrf in one thread(or  we can Load DLL twice,one load for one device?)
-
-state 
 ## Features 
 * You can find in the picture
 
 ##  Dependencies 
-    sudo apt-get install python-pip python-dev
-    sudo pip install Django==1.6.6
-    pip install pyusb==1.0.0b2
+Install python,django
+        sudo apt-get install python-pip python-dev
+        sudo pip install Django==1.6.6
+
+Install libhackrf
+        git clone --progress http://github.com/mossmann/hackrf.git
+        cd hackrf/host
+        mkdir build
+        cd build
+        cmake ../ -DINSTALL_UDEV_RULES=ON
+        make
+        sudo make install
+        sudo ldconfig
+
     
 ##  Usage 
     python manage.py runserver 0.0.0.0:9999

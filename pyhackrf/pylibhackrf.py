@@ -268,6 +268,11 @@ libhackrf.hackrf_compute_baseband_filter_bw.restype = c_uint32
 libhackrf.hackrf_compute_baseband_filter_bw.argtypes = [POINTER(hackrf_device), c_uint32]
 
 class HackRf(object):
+    __JELLYBEAN__ = 'Jellybean'
+    __JAWBREAKER__ = 'Jawbreaker'
+    __ONE = 'HackRF ONE'
+    NAME_LIST = [__JELLYBEAN__, __JAWBREAKER__, __ONE]
+
     def __init__(self):
         self.device = POINTER(hackrf_device)()
         self.callback = None
@@ -276,6 +281,12 @@ class HackRf(object):
     def __del__(self):
         if self.is_open == True:
             self.exit()
+
+    def reset(self):
+        ret = self.close()
+        if ret == HackRfError.HACKRF_SUCCESS:
+            ret = self.open()
+            return ret
 
     def setup(self):
         libhackrf.hackrf_init()
@@ -329,7 +340,7 @@ class HackRf(object):
             logger.debug('Successfully start HackRf in Transfer Mode')
             return HackRfError.HACKRF_SUCCESS
         else:
-            logger.error('Failed to stop HackRf in Transfer Mode')
+            logger.error('Failed to start HackRf in Transfer Mode')
 
     def stop_tx_mode(self):
         ret = libhackrf.hackrf_stop_tx(self.device)
@@ -374,6 +385,7 @@ class HackRf(object):
             return False
 
     def set_lna_gain(self, value):
+        ''' Sets the LNA gain, in 8Db steps, maximum value of 40 '''
         result = libhackrf.hackrf_set_lna_gain(self.device, value)
         if result == HackRfError.HACKRF_SUCCESS:
             logger.debug('Successfully set LNA gain to [%d]', value)
@@ -382,6 +394,7 @@ class HackRf(object):
             logger.error('Failed to set LNA gain to [%d]', value)
 
     def set_vga_gain(self, value):
+        ''' Sets the vga gain, in 2db steps, maximum value of 62 '''
         result = libhackrf.hackrf_set_vga_gain(self.device, value)
         if result == HackRfError.HACKRF_SUCCESS:
             logger.debug('Successfully set VGA gain to [%d]', value)
@@ -390,6 +403,7 @@ class HackRf(object):
             logger.error('Failed to set VGA gain to [%d]', value)
 
     def set_txvga_gain(self, value):
+        ''' Sets the txvga gain, in 1db steps, maximum value of 47 '''
         result = libhackrf.hackrf_set_txvga_gain(self.device, value)
         if result == HackRfError.HACKRF_SUCCESS:
             logger.debug('Successfully set TXVGA gain to [%d]', value)
@@ -516,11 +530,27 @@ class HackRf(object):
     # out[0] = (out[0] - 127)*(1.0/128);
     def packed_bytes_to_iq(self, bytes):
         ''' Convenience function to unpack array of bytes to Python list/array
-        of complex numbers and normalize range.
+        of complex numbers and normalize range.  size 16*32*512 262 144
         '''
         if has_numpy:
             # use NumPy array
             iq = np.empty(len(bytes)//2, 'complex')
+            iq.real, iq.imag = bytes[::2], bytes[1::2]
+            iq /= (255/2)
+            iq -= (1 + 1j)
+        else:
+            # use normal list
+            iq = [complex(i/(255/2) - 1, q/(255/2) - 1) for i, q in izip(bytes[::2], bytes[1::2])]
+        return iq
+
+    def packed_bytes_to_iq_withsize(self, bytes, size):
+        ''' Convenience function to unpack array of bytes to Python list/array
+        of complex numbers and normalize range.
+        '''
+        if has_numpy:
+            # use NumPy array
+            iq = np.empty(size , 'complex')
+            step = len(bytes) / (size * 2)
             iq.real, iq.imag = bytes[::2], bytes[1::2]
             iq /= (255/2)
             iq -= (1 + 1j)

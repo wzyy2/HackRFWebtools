@@ -2,79 +2,85 @@
 *::selection {
 	background: transparent;
 }
-
 *::-moz-selection {
 	background: transparent;
 }
-
 *::-webkit-selection {
 	background: transparent;
 }
-
 body {
 	font-family: Helvetica, Arial, sans-serif;
 	background-color: #ffffff;
+	color: #1c2e40;
 }
 
-/* Page header */
-
-#header {
-	color: #090909;
+#tunerinfotext {
+	color: #1c2e40;
 }
 
-#header h1 {
-	font-size: 2em;
+/* nav bar */
+.navbar-brand {
+	padding: 18px 15px;
 }
-
+.navbar-nav>li>a {
+	padding-top: 18px;
+	padding-bottom: 18px;
+}
+.navbar {
+	min-height: 57px;
+}
 /* General layout classes */
 
 .sectionheader {
 	padding: 4px;
 	margin-top: 0;
+	font-weight: bold !important;
+	color: #fff !important;
+	background: #2c3e50 !important;
 }
-
 .control {
 	margin: 5px;
 }
 
-/* Tuner
- * FIXME: we may support multiple tuners so this should probably
- * be class rather than ID based */
+.ui-button-text {
+	font-size : 14px;
+	color: #1c2e40;	
+}
+.ui-widget-content {
+	color: #1c2e40;	
+}
 
+/* Tuner
+* FIXME:we may support multiple tuners so this should probably
+* be class rather than ID based */
 #tuner {
 	padding: 5px;
 }
-
 .lcd {
- 	font-style: italic;
+	font-style: italic;
 	font-weight: bold;
 }
-
 #tunerlcd {
 	height: 120px;
-/*	position: relative;*/
+	/* position: relative;
+	*/
 }
-
 div.waterfall {
 	height: 264px;
 	position: relative;
 	background-color: #090909;
 }
-
 canvas.waterfall {
 	width: 100%;
 	height: 264px;
 	position: absolute;
 }
-
 #waterfall-canvas {
 	z-index: 0;
 }
-
 #waterfall-scale-canvas {
 	z-index: 1;
 }
-
 div.spectrum {
 	height: 144px;
 	position: relative;
@@ -85,43 +91,29 @@ canvas.spectrum {
 	height: 144px;
 	position: absolute;
 }
-
 #spectrum-canvas {
 	z-index: 0;
 }
-
 #spectrum-scale-canvas {
 	z-index: 1;
 }
 
-
 /* Receivers */
-
 #rxtabs {
-
 	padding: 5px;
 }
-
-
 .rxlcd {
 	height: 136px;
 	position: relative;
 }
-
 .rxoptions {
-
-
 }
 .rxcontrol {
-
 }
 .rxinfo {
-
-
 }
 
 /* Page footer */
-
 #footer {
 	font-size: 0.6em;
 	margin-top: 10px;

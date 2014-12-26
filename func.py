@@ -17,11 +17,12 @@ class HackrfSettings():
         self.rf_gain = 0
         self.if_gain = 16
         self.bb_gain = 20
-        self.bb_bandwidth = 1* 1000 * 1000
+        self.bb_bandwidth = 12* 1000 * 1000
         self.current_status = 0  #0 stop 1 rx 2 tx
         self.name = None
         self.version = None
         self.serial_num = None
+        self.rx_thread = None
 
 hackrf = pylibhackrf.HackRf()
 hackrf_settings = HackrfSettings()
@@ -174,7 +175,7 @@ class RxThread(threading.Thread):
             else:
                 transfer_lock.release()  
 
-thread = RxThread()
+
 
 def rx_callback_fun(hackrf_transfer):
     global have_recv,all_cnt,time1,transfer_lbuf 
@@ -194,14 +195,19 @@ def rx_callback_fun(hackrf_transfer):
 
 def  start_rx(params):
     ret = dict()
+    if hackrf_settings.current_status == 1:
+        return 
+    hackrf_settings.rx_thread =  RxThread()
+    hackrf_settings.rx_thread.start()
     if hackrf_settings.current_status == 0:
         hackrf.start_rx_mode(rx_callback_fun)
     hackrf_settings.current_status = 1
-    thread.start()
     return ret
 
 def  start_tx(params):
     ret = dict()
+    if hackrf_settings.current_status == 2:
+        return 
     if hackrf_settings.current_status == 0:
         hackrf.start_tx_mode(rx_callback_fun)
     hackrf_settings.current_status = 2
@@ -210,12 +216,13 @@ def  start_tx(params):
 def  stop(params):
     ret = dict()
     if hackrf_settings.current_status == 1:
-        thread.running = False
+        hackrf_settings.rx_thread.running = False
+        hackrf_settings.rx_thread .join()
         hackrf.stop_rx_mode()
+        hackrf.reset()
     elif hackrf_settings.current_status == 2:
         hackrf.stop_tx_mode()
     hackrf_settings.current_status = 0
-    
     return ret
 
 
