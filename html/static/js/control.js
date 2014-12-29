@@ -148,6 +148,34 @@ $(function() {
 		});
 	});
 
+	$("#fftrate").change(
+		function() {
+			var rate = $("#fftrate").val();
+			console.debug("new fft rate" + rate + " hz");
+			$.ajax({
+				url: '/do',
+				type: 'GET',
+				dataType: 'json',
+				data: {
+					"value": rate,
+					'method': 'set_fft_rate'
+				}
+			});
+		});
+	$("#fftsize").change(
+		function() {
+			var size = $("#fftsize").val();
+			console.debug("new fft size" + size);
+			$.ajax({
+				url: '/do',
+				type: 'GET',
+				dataType: 'json',
+				data: {
+					"value": size,
+					'method': 'set_fft_size'
+				}
+			});
+		});
 });
 
 $(document).ready(function() {
@@ -180,7 +208,7 @@ $(document).ready(function() {
 	function startStreaming(){
 		scrollinterval = window.setInterval(function () { 
 				w.scroll();
-			 }, 50);
+			 }, 80);
 		fetchinterval = window.setInterval(function() {
 			var url = '/do';
 
@@ -239,7 +267,7 @@ $(document).ready(function() {
 		}
 		});
 	
-	// Get board frequency
+	// Get board settings
 	$.ajax({
 		url: '/do',
 		type: 'GET',
@@ -252,6 +280,8 @@ $(document).ready(function() {
 			$("#rfgain").slider("value", control['rf_gain']);
 			$("#ifgain").slider("value", control['if_gain']);
 			$("#bbgain").slider("value", control['bb_gain']);
+			$("#fftrate").val(control['fft_rate']);   
+			$("#fftsize").val(control['fft_size']);   
 			//				
 			if(control['current_status'] == 0) {
 				stopStreaming();

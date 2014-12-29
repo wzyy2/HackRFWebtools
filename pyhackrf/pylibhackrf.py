@@ -1,6 +1,6 @@
 from ctypes import *
 import logging
-import os,sys
+import os
 
 # see if NumPy is available
 has_numpy = True
@@ -550,8 +550,8 @@ class HackRf(object):
         if has_numpy:
             # use NumPy array
             iq = np.empty(size , 'complex')
-            step = len(bytes) / (size * 2)
-            iq.real, iq.imag = bytes[::2], bytes[1::2]
+            bytes2 = bytes[0:size * 2]
+            iq.real, iq.imag = bytes2[::2], bytes2[1::2]
             iq /= (255/2)
             iq -= (1 + 1j)
         else:

@@ -10,23 +10,23 @@
 	<link rel="shortcut icon" href="/static/default-logo.png">
 </head>
 <body>
- 	<div id="nav-main" role="navigation" class="navbar navbar-default navbar-static-top">
- 			<div class="navbar-header">
- 				<button type="button" data-toggle="collapse" data-target=".navbar-collapse" class="navbar-toggle"><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button>
- 				<a href="/" class="navbar-brand"><img src="/static/default-logo.png"   style="height:20px; float:left; padding-right:2px; padding-bottom: 2px;"/>HackRF Webtools</a>
- 			</div>
- 			<div class="collapse navbar-collapse">
- 				<ul class="nav navbar-nav">
- 					<li><a href="/about">About</a></li>
- 				</ul>
- 				<ul class="nav navbar-nav navbar-right">
- 					<li ><a href="/?reset=1" ><span class="glyphicon glyphicon-off"  style="float: left; margin: 0px 6px 0 0; font-size: 1.5em;"></span>Reset</a></li>
- 				</ul>
- 			</div>
- 	</div> 
+	<div id="nav-main" role="navigation" class="navbar navbar-default navbar-static-top">
+		<div class="navbar-header">
+			<button type="button" data-toggle="collapse" data-target=".navbar-collapse" class="navbar-toggle"><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button>
+			<a href="/" class="navbar-brand"><img src="/static/default-logo2.png"   style="height:20px; float:left; padding-right:2px; padding-bottom: 2px;"/>HackRF Webtools</a>
+		</div>
+		<div class="collapse navbar-collapse">
+			<ul class="nav navbar-nav">
+				<li><a href="/about">About</a></li>
+			</ul>
+			<ul class="nav navbar-nav navbar-right">
+				<li ><a href="/?reset=1" ><span class="glyphicon glyphicon-off"  style="float: left; margin: 0px 6px 0 0; font-size: 1.5em;"></span>Reset</a></li>
+			</ul>
+		</div>
+	</div> 
 
-	<div class="container" >
-		<div id="tuner" class="ui-widget-content ui-corner-all" style="margin-top: 2px;">
+	<div class="container hackrf-container" >
+		<div id="tuner" class="hackrf-tab  ui-corner-all" style="margin-top: 16px;">
 			<div class="row clearfix">
 				<div class="col-md-6 column ui-sortable">
 					<div id="tunerdisplays" class="tunercolumn">
@@ -67,7 +67,7 @@
 			</div>
 		</div>
 		
-		<div id="rxtabs" class="ui-widget-content ui-corner-all">
+		<div id="rxtabs" class="hackrf-tab  ui-corner-all">
 			<div class="row clearfix">
 				<div class="col-md-4 column ui-sortable">
 					<div id="rx0options" class="rxcolumn rxoptions">
@@ -88,7 +88,7 @@
 						<div id="rx0squelch" class="control"></div>
 						<span class="control">Audio:</span>
 						<div id="rx0audio" class="control">
-							<audio controls preload="none" style="width:100%;" >
+							<audio controls preload="none" class="hackrf_audio" style="width:100%;" >
 								<source src="../audio/0000.mp3" />
 							</audio>
 						</div>
@@ -129,6 +129,23 @@
 							<span class="ui-icon ui-icon-wrench" style="float: left; margin: 2px 5px 0 0;"></span>
 							FFT Settings
 						</p>
+						<span class="control">FFT Size:</span>
+						<select id="fftsize" class="control">
+							<option value='512'>512</option>
+							<option value='1024'>1024</option>
+							<option value='2048'>2048</option>
+							<option value='4096'>4096</option>
+							<option value='8192'>8192</option>
+							<option value='16384'>16384</option>
+						</select>
+						<span class="control">FFT Rate:</span>
+						<select  id="fftrate" class="control">
+							<option value='20'>20fps</option>
+							<option value='30'>30fps</option>
+							<option value='40'>40fps</option>
+							<option value='50'>50fps</option>
+							<option value='60'>60fps</option>
+						</select>
 					</div>	
 				</div>
 			</div>
@@ -145,6 +162,7 @@
 	</div>
 
 	<script type="text/javascript" src="/static/jquery/jquery-1.9.1.js"></script>
+	<script src="/static/js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="/static/jquery/ui/jquery-ui.js"></script>
 	<script type="text/javascript" src="/static/jquery/ui/jquery.ui.core.js"></script>
 	<script type="text/javascript" src="/static/jquery/ui/jquery.ui.widget.js"></script>

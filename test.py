@@ -55,12 +55,17 @@ hackrf.start_rx_mode(callback_fun)
 while True:
     lock.acquire()  
     if have_recv == True:
-        iq = hackrf.packed_bytes_to_iq(buf2)
+        # iq = hackrf.packed_bytes_to_iq_withsize(buf2, 1024)
+        buf3 = [-2, -1, 1, 6, 8, 9, 8, 6, 1, -1, -2, -1, 1, 6, 8, 9, 8, 6, 1, -1, -2, -1, 1, 6, 8, 9, 8, 6, 1, -1]
+        iq = hackrf.packed_bytes_to_iq(buf3)
+        # iq = hackrf.packed_bytes_to_iq_withsize(buf2, 2048)
+        pl.figure()
         lock.release()  
         fy = np.fft.fft(iq) / iq.size
-        print fy
-        pl.figure()
+        
         pl.plot(fy)
+        fy = np.fft.fftshift( fy )
+
         pl.xlabel("frequency bin")
         pl.ylabel("power(dB)")
         pl.title("FFT result of triangle wave")

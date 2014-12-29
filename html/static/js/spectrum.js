@@ -41,14 +41,13 @@ function Spectrum(spectrum_target, scale_target) {
 			g = 255 - (n - 192) * 4;
 			b = 0;
 		}
-
 		//		r = 0; g = n; b = 0; //matrix!
 		this.palette.push("rgba(" + r + "," + g + "," + b + ", 0.5)");
 	}
 
 	this.my_gradient = this.context.createLinearGradient(0, 0, 0, this.canvas.height);
 	this.my_gradient.addColorStop(0, "black");
-	this.my_gradient.addColorStop(1, "rgba(121,121,121,1.0)");
+	this.my_gradient.addColorStop(1, "rgba(80,80,80,1.0)");
 
 	// Pre-fill canvas
 	this.context.fillStyle = this.my_gradient;
@@ -130,12 +129,12 @@ Spectrum.prototype.update = function(series) {
 		// 	ctx.fillRect(Math.floor(bin * w), y, Math.ceil(w), 1);
 		// }
 
-	this.context.strokeStyle = "white";
-	this.context.lineWidth = 0.5;
+	this.context.strokeStyle = "#fff";
+	this.context.lineWidth = 1;
 	this.context.beginPath();
-	this.context.moveTo(0, -series[0] * this.canvas.height * 10 +  this.canvas.height / 2 + 10);
+	this.context.moveTo(0, -series[0] * this.canvas.height * 10 +  this.canvas.height / 2 + 25);
 	for (n = 1; n < series.length; n++) {
-		this.context.lineTo(Math.floor(n * w), -series[n] * this.canvas.height * 10 +  this.canvas.height / 2 + 10);
+		this.context.lineTo(Math.floor(n * w), -series[n] * this.canvas.height * 10 +  this.canvas.height / 2 + 25);
 	}
 	this.context.stroke();
 

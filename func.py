@@ -1,12 +1,9 @@
-import traceback
-import threading 
-import random,ctypes
-import math,time
-from HackRFWebtools import settings
+import threading,signal ,traceback
+import random,ctypes,math,time
 from pyhackrf import pylibhackrf 
 from threading import Lock
 import numpy as np
-import pylab as pl
+from common import dsp
 
 #default setting
 class HackrfSettings():
@@ -17,12 +14,15 @@ class HackrfSettings():
         self.rf_gain = 0
         self.if_gain = 16
         self.bb_gain = 20
-        self.bb_bandwidth = 12* 1000 * 1000
+        self.bb_bandwidth = 7 * 1000 * 1000
         self.current_status = 0  #0 stop 1 rx 2 tx
+        self.fft_size = 8192
+        self.fft_rate = 20
         self.name = None
         self.version = None
         self.serial_num = None
         self.rx_thread = None
+
 
 hackrf = pylibhackrf.HackRf()
 hackrf_settings = HackrfSettings()
@@ -83,11 +83,17 @@ def waterfall(params):
     arr = list()
     spectrum_lock.acquire() 
     maxval = 0
+    step = len(spectrum) / 512
     for i in range(len(spectrum)):
-        if i % 100 == 1:
+        if i % step == 0:
+        # if i != None:
             if maxval < abs(spectrum[i]):
                 maxval = abs(spectrum[i]);
-            arr.append(abs(spectrum[i]))  # -1 ~1
+            get = 0.0
+            for j in range(step):
+                    get += abs(spectrum[i + j])
+            arr.append(get / step)                        
+            # arr.append(abs(spectrum[i]) )  # -1 ~1
         # arr.append(-10)
     spectrum_lock.release()
     ret['data'] = arr   #512  -50~-10
@@ -104,6 +110,8 @@ def get_control_options(params):
     ret['bb_bandwidth'] = hackrf_settings.bb_bandwidth
     ret['squelch_threshold'] = 10
     ret['current_status'] = hackrf_settings.current_status
+    ret['fft_rate'] = hackrf_settings.fft_rate
+    ret['fft_size'] = hackrf_settings.fft_size
     return ret
 
 def demodulator(params):
@@ -150,32 +158,55 @@ reg_func(set_if_gain,{},{})
 reg_func(set_bb_gain,{},{}) 
 reg_func(waterfall,{},{})    
 
+def set_fft_size(params):
+    ret = dict()
+    hackrf_settings.fft_size = int(params['value'])
+    return ret
+
+def set_fft_rate(params):
+    ret = dict()
+    hackrf_settings.fft_rate = int(params['value'])
+    return ret
+
+reg_func(set_fft_size,{},{}) 
+reg_func(set_fft_rate,{},{}) 
+
+#
+#
 transfer_lock = Lock()
 time1= time.time()
 have_recv = False
 all_cnt = 0
 transfer_lbuf = []
 
+test_buf = []
+for i in range(8192 * 32):
+    test_buf.append(math.sin(i) * 222)
+
 class RxThread(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self.running = True
+        self.fft_time =time.time()
     def run(self):
-        global have_recv,transfer_lbuf,spectrum 
+        global have_recv,transfer_lbuf,spectrum ,test_buf
         #note: we don't set self.running to False anywhere...
         while self.running:
             transfer_lock.acquire()  
             if have_recv == True:
-                iq = hackrf.packed_bytes_to_iq(transfer_lbuf)
-                transfer_lock.release()  
-                spectrum_lock.acquire() 
-                spectrum = np.fft.fft(iq) / iq.size
-                spectrum_lock.release()  
+                # iq = hackrf.packed_bytes_to_iq(transfer_lbuf)
+                iq = hackrf.packed_bytes_to_iq_withsize(transfer_lbuf, hackrf_settings.fft_size)
+                transfer_lock.release()
+                time_get = time.time()
+                if time_get - self.fft_time > 1.0 / hackrf_settings.fft_rate:
+                    spectrum_lock.acquire() 
+                    spectrum1 = np.fft.fft(iq) / iq.size
+                    spectrum = np.fft.fftshift(spectrum1)
+                    spectrum_lock.release()  
+                    self.fft_time = time_get
                 have_recv = False    
             else:
                 transfer_lock.release()  
-
-
 
 def rx_callback_fun(hackrf_transfer):
     global have_recv,all_cnt,time1,transfer_lbuf 
@@ -198,6 +229,7 @@ def  start_rx(params):
     if hackrf_settings.current_status == 1:
         return 
     hackrf_settings.rx_thread =  RxThread()
+    hackrf_settings.rx_thread.setDaemon(True)
     hackrf_settings.rx_thread.start()
     if hackrf_settings.current_status == 0:
         hackrf.start_rx_mode(rx_callback_fun)

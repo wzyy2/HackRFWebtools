@@ -368,7 +368,7 @@ BYTES_PER_SAMPLE = 2  #HackRF device produces 8 bit unsigned IQ data
 
 def transfer_threadproc(hackrf,int):
 	#const uint8_t endpoint_address = LIBUSB_ENDPOINT_IN | 1;
-	max_len =  16*32*512 #  262 144
+	max_len =  16*32*512 #  16*32*512 262 144
 	buf_cnt = 0
 	get = 1
 	current_time = time.time()

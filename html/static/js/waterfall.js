@@ -109,7 +109,7 @@ Waterfall.prototype.update = function(series) {
 
 	// Draw new series into first row
 	for (var bin = 0; bin < series.length; bin++) {
-		ctx.fillStyle = colour(this, series[bin]  * 255); // x2 here for some reason?
+		ctx.fillStyle = colour(this, series[bin]  * 32); // x2 here for some reason?
 		ctx.fillRect(Math.floor(bin * w), 0, Math.ceil(w), 1);
 	}
 }
