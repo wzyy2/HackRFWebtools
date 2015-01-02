@@ -176,6 +176,20 @@ $(function() {
 				}
 			});
 		});
+	$("#reset").click(
+		function() {
+			$.ajax({
+				url: '/do',
+				type: 'GET',
+				dataType: 'json',
+				data: {
+					'method': 'reset'
+				}
+				success: function(info) {
+					if(info['ret'] == "ok")
+				}
+			});
+		});
 });
 
 $(document).ready(function() {

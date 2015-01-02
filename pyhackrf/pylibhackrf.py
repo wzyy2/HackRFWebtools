@@ -1,13 +1,8 @@
 from ctypes import *
 import logging
 import os
+import numpy as np
 
-# see if NumPy is available
-has_numpy = True
-try:
-    import numpy as np
-except ImportError:
-    has_numpy = False
 try:
     from itertools import izip
 except ImportError:
@@ -282,12 +277,6 @@ class HackRf(object):
         if self.is_open == True:
             self.exit()
 
-    def reset(self):
-        ret = self.close()
-        if ret == HackRfError.HACKRF_SUCCESS:
-            ret = self.open()
-            return ret
-
     def setup(self):
         libhackrf.hackrf_init()
         return self.open()
@@ -532,29 +521,21 @@ class HackRf(object):
         ''' Convenience function to unpack array of bytes to Python list/array
         of complex numbers and normalize range.  size 16*32*512 262 144
         '''
-        if has_numpy:
-            # use NumPy array
-            iq = np.empty(len(bytes)//2, 'complex')
-            iq.real, iq.imag = bytes[::2], bytes[1::2]
-            iq /= (255/2)
-            iq -= (1 + 1j)
-        else:
-            # use normal list
-            iq = [complex(i/(255/2) - 1, q/(255/2) - 1) for i, q in izip(bytes[::2], bytes[1::2])]
+        # use NumPy array
+        iq = np.empty(len(bytes)//2, 'complex')
+        iq.real, iq.imag = bytes[::2], bytes[1::2]
+        iq /= (255/2)
+        iq -= (1 + 1j)
         return iq
 
     def packed_bytes_to_iq_withsize(self, bytes, size):
         ''' Convenience function to unpack array of bytes to Python list/array
         of complex numbers and normalize range.
         '''
-        if has_numpy:
-            # use NumPy array
-            iq = np.empty(size , 'complex')
-            bytes2 = bytes[0:size * 2]
-            iq.real, iq.imag = bytes2[::2], bytes2[1::2]
-            iq /= (255/2)
-            iq -= (1 + 1j)
-        else:
-            # use normal list
-            iq = [complex(i/(255/2) - 1, q/(255/2) - 1) for i, q in izip(bytes[::2], bytes[1::2])]
+        # use NumPy array
+        iq = np.empty(size , 'complex')
+        bytes2 = bytes[0:size * 2]
+        iq.real, iq.imag = bytes2[::2], bytes2[1::2]
+        iq /= (255/2)
+        iq -= (1 + 1j)
         return iq
