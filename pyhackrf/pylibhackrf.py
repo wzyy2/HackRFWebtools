@@ -80,7 +80,7 @@ class hackrf_device(Structure):
 
 class hackrf_transfer(Structure):
         _fields_ = [("hackrf_device", POINTER(hackrf_device)),
-                ("buffer", POINTER(c_uint8)),
+                ("buffer", POINTER(c_byte)),
                 ("buffer_length", c_int),
                 ("valid_length", c_int),
                 ("rx_ctx", c_void_p),
@@ -254,13 +254,12 @@ libhackrf.hackrf_set_antenna_enable.argtypes = [POINTER(hackrf_device), c_uint8]
 # hackrf_compute_baseband_filter_bw_round_down_lt(const uint32_t
 # bandwidth_hz);
 libhackrf.hackrf_compute_baseband_filter_bw_round_down_lt.restype = c_uint32
-libhackrf.hackrf_compute_baseband_filter_bw_round_down_lt.argtypes = [
-    POINTER(hackrf_device), c_uint32]
+libhackrf.hackrf_compute_baseband_filter_bw_round_down_lt.argtypes = [c_uint32]
 
 # extern ADDAPI uint32_t ADDCALL
 # hackrf_compute_baseband_filter_bw(const uint32_t bandwidth_hz);
 libhackrf.hackrf_compute_baseband_filter_bw.restype = c_uint32
-libhackrf.hackrf_compute_baseband_filter_bw.argtypes = [POINTER(hackrf_device), c_uint32]
+libhackrf.hackrf_compute_baseband_filter_bw.argtypes = [c_uint32]
 
 class HackRf(object):
     __JELLYBEAN__ = 'Jellybean'
@@ -287,7 +286,7 @@ class HackRf(object):
         return ret
 
     def open(self):
-        ret = libhackrf.hackrf_open(pointer(self.device))
+        ret = libhackrf.hackrf_open(self.device)
         if ret == HackRfError.HACKRF_SUCCESS:
             self.is_open = True
             logger.debug('Successfully open HackRf device')
@@ -490,11 +489,11 @@ class HackRf(object):
 
     def compute_baseband_filter_bw_round_down_lt(self, bandwidth_hz):
         pass
-        return libhackrf.hackrf_compute_baseband_filter_bw_round_down_lt(self.device, bandwidth_hz)
+        return libhackrf.hackrf_compute_baseband_filter_bw_round_down_lt(bandwidth_hz)
 
     def compute_baseband_filter_bw(self, bandwidth_hz):
         pass
-        return libhackrf.hackrf_compute_baseband_filter_bw(self.device, bandwidth_hz)
+        return libhackrf.hackrf_compute_baseband_filter_bw(bandwidth_hz)
 
     # def hackrf_set_freq_explicit(self, if_freq_hz, lo_freq_hz, path):
     #     pass
@@ -524,8 +523,7 @@ class HackRf(object):
         # use NumPy array
         iq = np.empty(len(bytes)//2, 'complex')
         iq.real, iq.imag = bytes[::2], bytes[1::2]
-        iq /= (255/2)
-        iq -= (1 + 1j)
+        iq /= 128.0
         return iq
 
     def packed_bytes_to_iq_withsize(self, bytes, size):
@@ -536,6 +534,5 @@ class HackRf(object):
         iq = np.empty(size , 'complex')
         bytes2 = bytes[0:size * 2]
         iq.real, iq.imag = bytes2[::2], bytes2[1::2]
-        iq /= (255/2)
-        iq -= (1 + 1j)
+        iq /= 128.0
         return iq

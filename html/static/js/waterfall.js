@@ -100,7 +100,7 @@ Waterfall.prototype.update = function(series) {
 	var w = this.canvas.width / series.length;
 
 	function colour(self, val) {
-		val = val * 255.0;
+		// val = val * 255.0;
 		val = Math.floor(val);
 		if (val < 0) val = 0;
 		if (val > 255) val = 255;
@@ -109,7 +109,7 @@ Waterfall.prototype.update = function(series) {
 
 	// Draw new series into first row
 	for (var bin = 0; bin < series.length; bin++) {
-		ctx.fillStyle = colour(this, series[bin]  * 32); // x2 here for some reason?
+		ctx.fillStyle = colour(this, (100 + series[bin]) * 3); // x2 here for some reason?
 		ctx.fillRect(Math.floor(bin * w), 0, Math.ceil(w), 1);
 	}
 }

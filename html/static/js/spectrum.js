@@ -107,6 +107,12 @@ Spectrum.prototype.redrawScale = function() {
 
 }
 
+var iirFftData = new Array([1024]);
+for(var i = 0; i < 1024; i++) {
+	iirFftData[i] = 0.0;
+}
+	
+
 Spectrum.prototype.update = function(series) {
 	var ctx = this.context;
 	var w = this.canvas.width / series.length;
@@ -132,9 +138,15 @@ Spectrum.prototype.update = function(series) {
 	this.context.strokeStyle = "#fff";
 	this.context.lineWidth = 1;
 	this.context.beginPath();
-	this.context.moveTo(0, -series[0] * this.canvas.height * 10 +  this.canvas.height / 2 + 25);
+
 	for (n = 1; n < series.length; n++) {
-		this.context.lineTo(Math.floor(n * w), -series[n] * this.canvas.height * 10 +  this.canvas.height / 2 + 25);
+		iirFftData[n] = (1.0 - 0.4) * iirFftData[n] + 0.4 * series[n];
+		
+	}
+
+	this.context.moveTo(0,  (-iirFftData[0] / 100) * this.canvas.height - 20);
+	for (n = 1; n < series.length; n++) {
+		this.context.lineTo(Math.floor(n * w), (-iirFftData[n] / 100) * this.canvas.height - 20);
 	}
 	this.context.stroke();
 

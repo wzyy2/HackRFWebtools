@@ -37,10 +37,11 @@ def call_func(name,params):
 def hackrf_reconf():
         hackrf.set_freq(hackrf_settings.centre_frequency)
         hackrf.set_sample_rate(hackrf_settings.sample_rate)
-        hackrf.set_amp_enable(cFalse)
-        hackrf.set_lna_gain(hackrf_settings.if_gain)
-        hackrf.set_vga_gain(hackrf_settings.bb_gain)    
+        hackrf_settings.bb_bandwidth =  hackrf.compute_baseband_filter_bw_round_down_lt(hackrf_settings.sample_rate)
         hackrf.set_baseband_filter_bandwidth(hackrf_settings.bb_bandwidth)  
+        hackrf.set_amp_enable(False)
+        hackrf.set_lna_gain(hackrf_settings.if_gain)
+        hackrf.set_vga_gain(hackrf_settings.bb_gain)            
         hackrf_settings.name =  hackrf.NAME_LIST[hackrf.board_id_read()]
         hackrf_settings.version = hackrf.version_string_read()    
 
@@ -81,11 +82,13 @@ def waterfall(params):
     ret['centre_frequency'] = hackrf_settings.centre_frequency
     ret['sample_rate'] = hackrf_settings.sample_rate
     ret['data'] = Rx.get_spectrum()
+    ret['exit'] = 0
     return ret
 
 def get_control_options(params):
     ret = dict()
     ret['centre_frequency'] =hackrf_settings.centre_frequency
+    ret['sample_rate'] =hackrf_settings.sample_rate
     ret['rf_gain'] = hackrf_settings.rf_gain
     ret['if_gain'] = hackrf_settings.if_gain
     ret['bb_gain'] = hackrf_settings.bb_gain
@@ -105,8 +108,17 @@ def demodulator(params):
 
 def set_bb_bandwidth(params):
     ret = dict()
-    hackrf_settings.bb_bandwidth = int(params['bb_bandwidth'])
+    hackrf_settings.bb_bandwidth = int(params['value'])
     hackrf.set_baseband_filter_bandwidth(hackrf_settings.bb_bandwidth)    
+    return ret
+
+def set_sample_rate(params):
+    ret = dict()
+    hackrf_settings.sample_rate = int(params['value'])
+    hackrf.set_sample_rate(hackrf_settings.sample_rate)    
+    #automatically set baseband bandwidth
+    hackrf_settings.bb_bandwidth =  hackrf.compute_baseband_filter_bw_round_down_lt(hackrf_settings.sample_rate)
+    hackrf.set_baseband_filter_bandwidth(hackrf_settings.bb_bandwidth)  
     return ret
 
 def set_rf_gain(params):
@@ -129,7 +141,6 @@ def set_bb_gain(params):
     hackrf_settings.bb_gain = int(params['value'])
     hackrf.set_vga_gain(hackrf_settings.bb_gain)  
     return ret
-
 
 def set_fft_size(params):
     ret = dict()
@@ -166,9 +177,10 @@ def  stop(params):
     ret = dict()
     if hackrf_settings.current_status == 1:
         hackrf_settings.rx_thread.running = False
-        hackrf_settings.rx_thread .join()
+        hackrf_settings.rx_thread.join()
         hackrf.stop_rx_mode()
-        hackrf.reset()
+        hackrf.close()
+        hackrf.open()
     elif hackrf_settings.current_status == 2:
         hackrf.stop_tx_mode()
     hackrf_settings.current_status = 0
@@ -177,6 +189,7 @@ def  stop(params):
 reg_func(test,{},{})
 reg_func(get_board_data,{},{})
 reg_func(set_centre_frequency,{},{})    
+reg_func(set_sample_rate,{},{})    
 reg_func(get_control_options,{},{})    
 reg_func(demodulator,{},{})    
 reg_func(set_bb_bandwidth,{},{})    
@@ -189,3 +202,4 @@ reg_func(set_fft_rate,{},{})
 reg_func(start_rx,{},{}) 
 reg_func(start_tx,{},{}) 
 reg_func(stop,{},{}) 
+reg_func(reset,{},{}) 

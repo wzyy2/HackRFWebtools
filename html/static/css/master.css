@@ -13,9 +13,9 @@ body {
 	background-color: #ffffff;
 	color: #1c2e40;
 }
-
 #tunerinfotext {
 	color: #1c2e40;
+	padding-left: 4px;
 }
 
 /* nav bar */
@@ -30,42 +30,38 @@ body {
 	min-height: 57px;
 	margin-bottom: 0px;
 }
-/* General layout classes */
 
+/* General layout classes */
+.sectionheader-red {
+	background: #3498db !important;
+}
+.sectionheader-green {
+	background: #398439 !important;
+}
 .sectionheader {
 	padding: 4px;
-	margin-top: 0;
+	margin-bottom: 10px;
 	font-weight: bold !important;
 	color: #fff !important;
-	background: #2c3e50 !important;
+	background: #2c3e50;
 }
+
 .control {
 	margin: 5px;
 }
-/* jquery ui*/
-.ui-button-text {
-	font-size : 14px;
-	color: #1c2e40;	
-}
+
+/* jquery ui */
 .ui-widget-content {
-	color: #1c2e40;	
-	background:  #ededed;
-}
-.ui-button {
-	border: 1px solid #2c3e50  !important;	
-}
-.ui-button.ui-state-active {
-	background: #2c3e50 !important;	
-}
-.ui-button.ui-state-active  .ui-button-text{
-	color : #fff;	
+	color: #1c2e40;
+	background: #ededed;
 }
 .ui-slider {
-	border: 1px solid #2c3e50  !important;			
+	border: 1px solid #2c3e50 !important;
 }
 .ui-slider-handle {
-	background: #2c3e50 !important;		
+	background: #2c3e50 !important;
 }
+
 /* Tuner
 * FIXME:we may support multiple tuners so this should probably
 * be class rather than ID based */
@@ -128,19 +124,30 @@ canvas.spectrum {
 }
 .rxinfo {
 }
-
+.rx-header-btn-grp {
+	float: right;
+}
+.rx-header-btn {
+	height: 20px;
+}
 /* Page footer */
 #footer {
 	font-size: 0.6em;
 	margin-top: 10px;
 	text-align: center;
 }
-.hackrf-audio{
-	
+.hackrf-audio {
 }
 .hackrf-container {
-	background: #ffffff  !important;		
+	background: #ffffff !important;
 }
 .hackrf-tab {
-/*	border: 1px solid #2c3e50  ;	*/	
+	/* border: 1px solid #2c3e50;
+	*/
 }
+.btn-default {
+	color: #333;
+	background-color: #fff;
+	border-color: #ccc;
+}
+
